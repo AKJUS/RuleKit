@@ -61,6 +61,10 @@ Game Center achievement, or hinting at a shortcut once a user repeats an action.
 - ``RuleKit/Event/Donations``
 - ``RuleKit/AppVersion``
 
+### Distribution
+
+- ``RuleKit/Distribution``
+
 ### Options
 
 - ``TriggerFrequencyOption``

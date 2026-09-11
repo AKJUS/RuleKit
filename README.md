@@ -59,7 +59,7 @@ await RuleKit.Event.entityCreated.donate()
 
 As soon as an event is donated, RuleKit re-evaluates every rule and fires the triggers whose rules now pass.
 
-Rules can trigger a closure (above) or post a `Notification` — handy when the side effect belongs to your UI layer. They compose with `.allOf` / `.anyOf` / `.noneOf` / `.atLeast` / `.not` (and the `&&`, `||`, `!` operators), and conditions can read each event's donation history (count, dates, app version, recency, cooldowns).
+Rules can trigger a closure (above) or post a `Notification` — handy when the side effect belongs to your UI layer. They compose with `.allOf` / `.anyOf` / `.noneOf` / `.atLeast` / `.not` (and the `&&`, `||`, `!` operators), and conditions can read each event's donation history (count, dates, app version, recency, cooldowns). A ruleset can also be gated on where the build came from, so a review prompt only ever reaches an App Store install (`.appStoreBuild`).
 
 ## Documentation
 

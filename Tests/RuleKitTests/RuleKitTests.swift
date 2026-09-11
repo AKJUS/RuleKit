@@ -798,6 +798,44 @@ struct RuleKitTests {
         #expect(counter.value == 0, "A removed rule must not fire.")
     }
 
+    @Test("A distribution rule fires only for the channel the build came from")
+    func distributionRuleMatchesCurrentChannel() async {
+        let runID = UUID().uuidString
+        let event = RuleKit.Event(rawValue: "test.distribution.event.\(runID)")
+        let others = RuleKit.Distribution.allCases.filter { $0 != .current }
+
+        let matchingCounter = FireCounter()
+        RuleKit.setRule("test.distribution.matching.\(runID)", triggering: { matchingCounter.increment() }) {
+            .distribution(.current)
+        }
+        let otherCounter = FireCounter()
+        RuleKit.setRule("test.distribution.other.\(runID)", triggering: { otherCounter.increment() }) {
+            DistributionRule(distributions: Set(others))
+        }
+
+        await event.donate()
+
+        #expect(matchingCounter.value == 1, "The current channel fulfills the rule that lists it.")
+        #expect(otherCounter.value == 0, "Every other channel leaves the rule unfulfilled.")
+    }
+
+    @Test("The .appStoreBuild rule does not fire outside of an App Store install")
+    func appStoreBuildRuleDoesNotTriggerUnderTest() async {
+        let runID = UUID().uuidString
+        let event = RuleKit.Event(rawValue: "test.appstore.event.\(runID)")
+
+        let counter = FireCounter()
+        RuleKit.setRule("test.appstore.\(runID)", triggering: { counter.increment() }) {
+            .appStoreBuild
+        }
+
+        await event.donate()
+
+        // A test bundle is never an App Store install, whichever platform runs it.
+        #expect(RuleKit.Distribution.current != .appStore)
+        #expect(counter.value == 0, ".appStoreBuild gates a trigger out of every other build.")
+    }
+
     @Test("Registered rules can be introspected by name")
     func registeredRulesCanBeIntrospected() {
         let runID = UUID().uuidString

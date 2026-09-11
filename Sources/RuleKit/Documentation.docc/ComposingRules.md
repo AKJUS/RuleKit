@@ -80,6 +80,29 @@ asynchronous boolean — app state, a feature flag, a stored preference.
 .condition { await MyStore.shared.isPremium }
 ```
 
+## Where the build came from
+
+A trigger often only makes sense for a build the public downloaded: an App Store review
+prompt shown to a TestFlight tester, or to yourself in the simulator, is a prompt wasted —
+the review sheet does nothing outside of an App Store install. ``Rule/appStoreBuild``
+gates the whole ruleset on that:
+
+```swift
+RuleKit.setRule(triggering: { requestReview() }, options: .triggerFrequency(.monthly)) {
+    .appStoreBuild && .event(.appStarted, atLeast: 3)
+}
+```
+
+- term ``Rule/appStoreBuild``: Fulfilled only for a build installed from the App Store.
+- term ``Rule/distribution(_:)``: Fulfilled when the build came from one of the channels
+  you list, e.g. `.distribution(.appStore, .testFlight)` to also let testers see it.
+
+``RuleKit/Distribution/current`` is resolved once, from the main bundle: the simulator,
+an embedded provisioning profile (development, ad-hoc or enterprise signing) and a
+TestFlight `sandboxReceipt` each rule the App Store out. When the channel cannot be told
+apart it is ``RuleKit/Distribution/other``, so a gated trigger stays silent rather than
+firing where it does not belong.
+
 ## Combining rules
 
 These combinators build branches of the tree:

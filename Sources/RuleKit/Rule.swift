@@ -97,6 +97,42 @@ extension Rule where Self == ConditionRule {
     }
 }
 
+// MARK: Distribution rule
+
+public struct DistributionRule: Rule {
+    let distributions: Set<RuleKit.Distribution>
+
+    public var isFulfilled: Bool {
+        get async {
+            distributions.contains(.current)
+        }
+    }
+
+    public init(distributions: Set<RuleKit.Distribution>) {
+        self.distributions = distributions
+    }
+}
+
+extension Rule where Self == DistributionRule {
+    /// A rule fulfilled when the running build came from one of the given channels.
+    ///
+    /// ```swift
+    /// .distribution(.appStore, .testFlight)
+    /// ```
+    public static func distribution(_ distributions: RuleKit.Distribution...) -> Rule {
+        DistributionRule(distributions: Set(distributions))
+    }
+
+    /// A rule fulfilled only when the running build was installed from the App Store.
+    ///
+    /// Pair it with a review prompt, or with anything else that only means something for
+    /// a build the public downloaded: it keeps the trigger from firing in the simulator,
+    /// in a build run from Xcode, or for a TestFlight tester.
+    public static var appStoreBuild: Rule {
+        DistributionRule(distributions: [.appStore])
+    }
+}
+
 // MARK: Event rule
 
 public struct EventRule: Rule {
